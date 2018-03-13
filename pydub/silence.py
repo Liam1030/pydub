@@ -4,7 +4,7 @@ import numpy as np
 from .utils import db_to_float
 
 
-def detect_silence(audio_segment, min_silence_len=500, max_silence_len=3000, silence_thresh=-16, seek_step=100):
+def detect_silence(audio_segment, min_silence_len=500, max_silence_len=5000, silence_thresh=-16, seek_step=100):
     seg_len = len(audio_segment)
 
     # you can't have a silent portion of a sound that is longer than the sound
@@ -12,10 +12,6 @@ def detect_silence(audio_segment, min_silence_len=500, max_silence_len=3000, sil
         return []
 
     # convert silence threshold to a float value (so we can compare it to rms)
-    print(silence_thresh)
-
-    print(db_to_float(silence_thresh))
-    print(audio_segment.max_possible_amplitude)
     silence_thresh = db_to_float(silence_thresh) * audio_segment.max_possible_amplitude * 2
 
     # find silence and add start and end indicies to the to_cut list
@@ -28,14 +24,11 @@ def detect_silence(audio_segment, min_silence_len=500, max_silence_len=3000, sil
 
     # guarantee last_slice_start is included in the range
     # to make sure the last portion of the audio is seached
-    print(slice_starts)
     if last_slice_start % seek_step:
         slice_starts = itertools.chain(slice_starts, [last_slice_start])
 
-    print(silence_thresh)
     for i in slice_starts:
         audio_slice = audio_segment[i:i + seek_step]
-        print(i, i + seek_step, audio_slice.rms)
         if audio_slice.rms <= silence_thresh:
             silence_starts.append(i)
 
@@ -44,7 +37,6 @@ def detect_silence(audio_segment, min_silence_len=500, max_silence_len=3000, sil
         return []
 
     # combine the silence we detected into ranges (start ms - end ms)
-    print(silence_starts)
     silent_ranges = []
 
     prev_i = silence_starts.pop(0)
@@ -70,11 +62,10 @@ def detect_silence(audio_segment, min_silence_len=500, max_silence_len=3000, sil
     if current_range_end - current_range_start >= min_silence_len:
         silent_ranges.append([current_range_start, current_range_end])
 
-    print(silent_ranges)
     return silent_ranges
 
 
-def detect_nonsilence(audio_segment, min_silence_len=500, max_silence_len=3000,
+def detect_nonsilence(audio_segment, min_silence_len=500, max_silence_len=5000,
                      silence_thresh=-16, keep_silence=100, seek_step=100,
                      min_nonsilence_len=5000, max_nonsilence_len=15000):
     silent_ranges = detect_silence(audio_segment, min_silence_len, max_silence_len,
@@ -97,17 +88,14 @@ def detect_nonsilence(audio_segment, min_silence_len=500, max_silence_len=3000,
         end_i = silent_ranges[i][1]
         curr_i = start_i + keep_silence
 
-        print(prev_i, curr_i)
         nonsilence_duration = curr_i - prev_i
         if nonsilence_duration <= max_nonsilence_len:
             if i > 0 and last_duration + nonsilence_duration <= (max_nonsilence_len + min_nonsilence_len) // 2:
                 # merge with previous range which is less than min_nonsilence_len
                 nonsilence_ranges[-1][1] = curr_i;
-                print("Update %d %d" % (nonsilence_ranges[-1][0], nonsilence_ranges[-1][1]))
                 last_duration = curr_i - nonsilence_ranges[-1][0]
             else:
                 nonsilence_ranges.append([prev_i, curr_i])
-                print("append %d %d" % (prev_i, curr_i))
                 last_duration = curr_i - prev_i
         else:
             raise Exception("""Some voice slices out of range, you can insert
@@ -128,7 +116,7 @@ def detect_nonsilence(audio_segment, min_silence_len=500, max_silence_len=3000,
     return nonsilence_ranges
 
 
-def split_on_silence(audio_segment, min_silence_len=500, max_silence_len=3000,
+def split_on_silence(audio_segment, min_silence_len=500, max_silence_len=5000,
                      silence_thresh=-16, keep_silence=100, seek_step=100,
                      min_nonsilence_len=5000, max_nonsilence_len=15000):
     """
@@ -157,7 +145,6 @@ def split_on_silence(audio_segment, min_silence_len=500, max_silence_len=3000,
     not_silence_ranges = detect_nonsilence(audio_segment, min_silence_len, max_silence_len,
                                            silence_thresh, keep_silence, seek_step,
                                            min_nonsilence_len, max_nonsilence_len)
-    print(not_silence_ranges)
 
     chunks = []
     for start_i, end_i in not_silence_ranges:
