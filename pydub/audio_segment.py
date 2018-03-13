@@ -596,11 +596,7 @@ class AudioSegment(object):
             out_f.seek(0)
             return out_f
 
-        # for wav output we can just write the data directly to out_f
-        if format == "wav":
-            data = out_f
-        else:
-            data = NamedTemporaryFile(mode="wb", delete=False)
+        data = NamedTemporaryFile(mode="wb", delete=False)
 
         wave_data = wave.open(data, 'wb')
         wave_data.setnchannels(self.channels)
@@ -611,10 +607,6 @@ class AudioSegment(object):
         wave_data.setnframes(int(self.frame_count()))
         wave_data.writeframesraw(self._data)
         wave_data.close()
-
-        # for wav files, we're done (wav data is written directly to out_f)
-        if format == 'wav':
-            return out_f
 
         output = NamedTemporaryFile(mode="w+b", delete=False)
 

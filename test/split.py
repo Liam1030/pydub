@@ -14,7 +14,7 @@ def main():
     chunks = split_on_silence(speech, min_silence_len=300, silence_thresh=-45,
                               seek_step=100, min_nonsilence_len=5000, max_nonsilence_len=15000)
     for i in range(0, len(chunks)):
-        chunks[i].export("%d.wav" % i, format='wav')
+        chunks[i].export("%03d.wav" % i, format='wav', parameters=["-ar", "16000", "-ac", "1"])
 
 if __name__ == '__main__':
     main()

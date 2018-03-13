@@ -49,8 +49,7 @@ def detect_silence(audio_segment, min_silence_len=500, max_silence_len=5000, sil
              silence_duration = current_range_end - current_range_start
 
              if silence_duration > max_silence_len:
-                 raise Exception("""Some silence slices duration exceed maximum value,
-                 please reduce the silence threshold!""")
+                 raise Exception("Some silence slices duration exceed")
 
              if silence_duration >= min_silence_len:
                  silent_ranges.append([current_range_start, current_range_end])
@@ -66,8 +65,8 @@ def detect_silence(audio_segment, min_silence_len=500, max_silence_len=5000, sil
 
 
 def detect_nonsilence(audio_segment, min_silence_len=500, max_silence_len=5000,
-                     silence_thresh=-16, keep_silence=100, seek_step=100,
-                     min_nonsilence_len=5000, max_nonsilence_len=15000):
+                      silence_thresh=-16, keep_silence=100, seek_step=100,
+                      min_nonsilence_len=5000, max_nonsilence_len=15000):
     silent_ranges = detect_silence(audio_segment, min_silence_len, max_silence_len,
                                    silence_thresh, seek_step)
     len_seg = len(audio_segment)
