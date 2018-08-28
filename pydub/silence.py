@@ -109,7 +109,7 @@ def detect_voice(audio_segment, min_silence_len=300, max_silence_len=4000,
             some silence slices by:
             1. increase the silence threshold; and
             2. shrink the minimum silence slice.""")
-        prev_i = curr_i 
+        prev_i = end_i 
 
     if end_i != len_seg and len_seg - prev_i >= min_voice_len:
         voice_ranges.append([prev_i, len_seg])
